@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeLite_Workspace Name="MC_P1" Database="">
+  <Project Name="PrimeFinder" Path="PrimeFinder.project" Active="Yes"/>
+  <BuildMatrix>
+    <WorkspaceConfiguration Name="Debug" Selected="yes">
+      <Environment/>
+      <Project Name="PrimeFinder" ConfigName="Debug"/>
+    </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Release" Selected="yes">
+      <Environment/>
+      <Project Name="PrimeFinder" ConfigName="Release"/>
+    </WorkspaceConfiguration>
+  </BuildMatrix>
+</CodeLite_Workspace>
