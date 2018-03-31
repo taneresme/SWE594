@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <iostream>
+#include <string>
+#include <list>
+#include <cmath>
 #include <time.h>
 #include <omp.h>
 
