@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=AliKutlu
-Date                   :=01/04/18
+Date                   :=03/04/18
 CodeLitePath           :="/home/alikutlu/.codelite"
 LinkerName             :=/usr/bin/x86_64-linux-gnu-g++
 SharedObjectLinkerName :=/usr/bin/x86_64-linux-gnu-g++ -shared -fPIC
@@ -60,7 +60,7 @@ AS       := /usr/bin/x86_64-linux-gnu-as
 ## User defined environment variables
 ##
 CodeLiteDir:=/usr/share/codelite
-Objects0=$(IntermediateDirectory)/main.cpp$(ObjectSuffix) $(IntermediateDirectory)/primeNumbers-Parallel.cpp$(ObjectSuffix) 
+Objects0=$(IntermediateDirectory)/main.cpp$(ObjectSuffix) 
 
 
 
@@ -98,14 +98,6 @@ $(IntermediateDirectory)/main.cpp$(DependSuffix): main.cpp
 
 $(IntermediateDirectory)/main.cpp$(PreprocessSuffix): main.cpp
 	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/main.cpp$(PreprocessSuffix) "main.cpp"
-
-$(IntermediateDirectory)/primeNumbers-Parallel.cpp$(ObjectSuffix): primeNumbers-Parallel.cpp $(IntermediateDirectory)/primeNumbers-Parallel.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/alikutlu/Belgeler/SWE/2018.2/594 multicore/MC_P1/primeNumbers-Parallel.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/primeNumbers-Parallel.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/primeNumbers-Parallel.cpp$(DependSuffix): primeNumbers-Parallel.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/primeNumbers-Parallel.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/primeNumbers-Parallel.cpp$(DependSuffix) -MM "primeNumbers-Parallel.cpp"
-
-$(IntermediateDirectory)/primeNumbers-Parallel.cpp$(PreprocessSuffix): primeNumbers-Parallel.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/primeNumbers-Parallel.cpp$(PreprocessSuffix) "primeNumbers-Parallel.cpp"
 
 
 -include $(IntermediateDirectory)/*$(DependSuffix)

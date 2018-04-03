@@ -36,6 +36,20 @@ struct output{
 	double time;
 };
 
+struct scheduleDetail{
+	omp_sched_t type;
+	std::string name;
+	
+	scheduleDetail(char abbr){
+		switch(toupper(abbr)){
+			case 'S': name="Static" ; type=omp_sched_static;  break;
+			case 'D': name="Dynamic"; type=omp_sched_dynamic; break;
+			case 'G': name="Guided" ; type=omp_sched_guided;  break;
+			default : std::cout << "Invalid character!\n";	  break;
+		}
+	}
+};
+
 long int N = 1;
 double ts = 0;
 
@@ -68,25 +82,17 @@ output findPrimes(int N, int threadCount, omp_sched_t schedule, int chunk){
 	return r;
 }
 
-std::string formatOutput(omp_sched_t schedule, std::string _schedule, int chunk){
-	double t1, t2, t4, t8, t12, s2, s4, s8;
-	t1 = findPrimes(N, 1, schedule, chunk).time;
-	t2 = findPrimes(N, 2, schedule, chunk).time;
-	t4 = findPrimes(N, 4, schedule, chunk).time;
-	t8 = findPrimes(N, 8, schedule, chunk).time;
-	t12= findPrimes(N,12, schedule, chunk).time;
-	s2 = ts/t2;
-	s4 = ts/t4;
-	s8 = ts/t8;
-	std::ostringstream s;
-	s <<N<<',' <<_schedule<<',' <<chunk<<',' <<t1<<',' <<t2<<','
-		<<t4<<',' <<t8<<',' <<t12<<',' <<s2<<',' <<s4<<',' <<s8<<'\n';
-	return s.str();
+std::string formatOutput(scheduleDetail schedule, int chunk){
+	std::ostringstream st;
+	st <<N<<',' <<schedule.name<<',' <<chunk<<',';
+	double t[5], s[3];
+	short i[5]={1,2,4,8,12};
+	int k;
+	for(k=0; k<5; k++){ t[k] = findPrimes(N, i[k], schedule.type, chunk).time; st<<t[k]<<','; }
+	for(k=0; k<3; k++){ s[k]=ts/t[k+1]; st<<s[k]; if(k<2) st<<','; }
+	st<<'\n';
+	return st.str();
 }
-
-/*void append(std::list<int> l1, std::list<int> l2){
-	l1.splice(l1.end(),l2);
-}*/
 
 int main(int argc, char *argv[])
 {
@@ -115,8 +121,8 @@ int main(int argc, char *argv[])
 	ofs.open("results.csv");
 	ofs << "M,Scheduling,Chunk,T1,T2,T4,T8,T12,S2,S4,S8\n";
 	
-	//FINDING PRIMES REPEATEDLY
-	ofs << formatOutput(omp_sched_static, "Static", 10);
+	//FINDING PRIMES REPEATEDLY AND RECORDING THE RESULTS
+	ofs << formatOutput(scheduleDetail('S'), 10);
 	
 	ofs.close();
 	return 0;
