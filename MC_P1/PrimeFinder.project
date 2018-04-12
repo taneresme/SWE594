@@ -3,8 +3,9 @@
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="src">
-    <File Name="main.cpp"/>
     <File Name="primeNumbers-Parallel.cpp" ExcludeProjConfig="Debug"/>
+    <File Name="main_v04.cpp" ExcludeProjConfig="Debug"/>
+    <File Name="main_v06.cpp"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

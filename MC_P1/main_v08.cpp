@@ -3,10 +3,11 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <list>
+#include <vector>
 #include <cmath>
 #include <omp.h>
 #include <time.h>
+#include <algorithm>
 
 /* HOW TO USE AND WHY:
  * So, what is going on here? First, note that we're trying to find prime numbers up to N.
@@ -32,7 +33,7 @@
  */
 
 struct output{
-	std::list<int> primes;
+	std::vector<long int> primes;
 	double time;
 };
 
@@ -51,38 +52,41 @@ struct scheduleDetail{
 };
 
 long int N = 1;
-double ts = 0;
+//double ts = 0;
+short ind[5]={1,2,4,8,12};
 
-output findPrimes(int N, int threadCount, omp_sched_t schedule, int chunk){
+output findPrimes(long int N, int threadCount, omp_sched_t schedule, int chunk){
 	output r;
 	int _sqrt = (int)sqrt(N);
 	int i;
 	//SERIAL SECTION
-	r.primes = std::list<int>(1,2);
+	r.time = omp_get_wtime();
+	r.primes.push_back(2);
 	for(i=3; i<=_sqrt; i+=2){
 		for(int j : r.primes){
 			if(i%j==0) break;
-			if(i/j<=j) { r.primes.push_back(i); break; }
+			if(i/j<j){ r.primes.push_back(i); break; }
 		}
 	}
 	_sqrt = r.primes.size(); //This variable now stores the number of primes less than sqrt(N).
 	
 	//PARALLEL SECTION
 	omp_set_schedule(schedule, chunk);
-	std::list<int>::iterator it; int k;
-	r.time = omp_get_wtime();
-#pragma omp parallel firstprivate(i) shared (r) private (it, k)
+//	std::list<long int>::iterator it;
+	int k;
+#pragma omp parallel firstprivate(i) shared(r) private (k) num_threads(threadCount)
 {
 	#pragma omp for
-	for(i = 0;i<=N; i+=2){
-		for(it=r.primes.begin(), k=0; k<_sqrt; k++, it++){
-			if(i%(*it)==0) break;
-			if(i/(*it)<=(*it)) { r.primes.push_back(i); break; }
+	for(long int _i=i;_i<=N; _i+=2){
+		for(k=0; k<=_sqrt; k++){
+			if( ((_i/r.primes[k]) <= r.primes[k]) || (k==_sqrt) )
+				{ r.primes.push_back(_i); break; }
+			if(_i%(r.primes[k])==0) break;
 		}
 	}
-	r.time = omp_get_wtime()-r.time;
 }
-	r.primes.sort();
+	r.time = omp_get_wtime()-r.time;
+	std::sort(r.primes.begin(), r.primes.end());
 	return r;
 }
 
@@ -90,17 +94,21 @@ std::string formatOutput(scheduleDetail schedule, int chunk){
 	std::ostringstream st;
 	st <<N<<',' <<schedule.name<<',' <<chunk<<',';
 	double t[5], s[3];
-	short i[5]={1,2,4,8,12};
 	int k;
-	for(k=0; k<5; k++){ t[k] = findPrimes(N, i[k], schedule.type, chunk).time; st<<t[k]<<','; }
-	for(k=0; k<3; k++){ s[k]=ts/t[k+1]; st<<s[k]; if(k<2) st<<','; }
+	for(k=0; k<5; k++){
+		output p = findPrimes(N, ind[k], schedule.type, chunk);
+		t[k] = p.time; st<<t[k]<<',';
+		//for(auto i:p.primes) std::cout << i << '\t'; std::cout<<std::endl; //UNCOMMENT TO PRINT PRIMES
+		}
+	for(k=0; k<3; k++){ s[k]=t[0]/t[k+1]; st<<s[k]; if(k<2) st<<','; }
 	st<<'\n';
 	return st.str();
 }
 
 int main(int argc, char *argv[])
 {
-	omp_set_schedule(omp_sched_dynamic, 5);
+	//Letting compiler know that we'll be working in parallel
+	omp_set_schedule(omp_sched_dynamic, 0);
 	
 	//INPUT ACCEPTANCE
 	if(argc>2) { std::cout << "Please enter at most 1 additional (integer) argument."; return 1; }
@@ -110,7 +118,7 @@ int main(int argc, char *argv[])
 		std::string s; std::cin  >> s; N = std::stoi(s);
 	}
 		
-	//CALCULATING SEQUANTIAL TIME
+/*	//CALCULATING SEQUANTIAL TIME //omitted since we're taking t0 instead of t*
 	std::list<int> P(1,2);
 	ts = omp_get_wtime();
 	for(int i=3; i<=N; i +=2){
@@ -119,7 +127,7 @@ int main(int argc, char *argv[])
 			if(i/j<=j) { P.push_back(i); break; }
 		}
 	}
-	ts = omp_get_wtime()-ts;
+	ts = omp_get_wtime()-ts;*/
 	
 	
 	//OUTPUT FILE CREATION
@@ -128,17 +136,12 @@ int main(int argc, char *argv[])
 	ofs << "M,Scheduling,Chunk,T1,T2,T4,T8,T12,S2,S4,S8\n";
 	
 	//FINDING PRIMES REPEATEDLY AND RECORDING THE RESULTS
-	ofs << formatOutput(scheduleDetail('S'), 1);
-	ofs << formatOutput(scheduleDetail('S'), 2);
-	ofs << formatOutput(scheduleDetail('S'), 4);
-	ofs << formatOutput(scheduleDetail('S'), 8);
-	ofs << formatOutput(scheduleDetail('S'), 12);
-	ofs << formatOutput(scheduleDetail('G'), 1);
-	ofs << formatOutput(scheduleDetail('G'), 2);
-	ofs << formatOutput(scheduleDetail('G'), 4);
-	ofs << formatOutput(scheduleDetail('G'), 8);
-	ofs << formatOutput(scheduleDetail('G'), 12);
-	ofs << formatOutput(scheduleDetail('D'), 1);
+	ofs << formatOutput(scheduleDetail('S'), 50);
+	ofs << formatOutput(scheduleDetail('S'),100);
+	ofs << formatOutput(scheduleDetail('D'), 50);
+	ofs << formatOutput(scheduleDetail('D'),100);
+	ofs << formatOutput(scheduleDetail('G'), 50);
+	ofs << formatOutput(scheduleDetail('G'),100);
 	
 	ofs.close();
 	return 0;
