@@ -88,6 +88,8 @@ output findPrimes(long int N, int threadCount, omp_sched_t schedule, int chunk){
 	}
 }
 	r.time = omp_get_wtime()-r.time;
+	
+	//MERGING THREAD DATA
 	int y=0, z=0;
 	for(y; y<threadCount; y++){ z += r.primes[y].size(); }
 	r.primes[12].reserve(z+r.primes[12].size());
@@ -97,6 +99,7 @@ output findPrimes(long int N, int threadCount, omp_sched_t schedule, int chunk){
 		r.primes[y].clear();
 	}
 	std::sort(r.primes[12].begin(), r.primes[12].end());
+	
 	return r;
 }
 
