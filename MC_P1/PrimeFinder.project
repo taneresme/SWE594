@@ -6,6 +6,7 @@
     <File Name="primeNumbers-Parallel.cpp" ExcludeProjConfig="Debug"/>
     <File Name="main_v04.cpp" ExcludeProjConfig="Debug"/>
     <File Name="main_v06.cpp"/>
+    <File Name="main_v08.cpp"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

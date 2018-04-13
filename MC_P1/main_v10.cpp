@@ -33,7 +33,7 @@
  */
 
 struct output{
-	std::vector<long int> primes;
+	std::vector<long int> primes[13];
 	double time;
 };
 
@@ -52,7 +52,7 @@ struct scheduleDetail{
 };
 
 long int N = 1;
-//double ts = 0;
+//double ts = 0; //To store sequential time, now omitted.
 short ind[5]={1,2,4,8,12};
 
 output findPrimes(long int N, int threadCount, omp_sched_t schedule, int chunk){
@@ -61,32 +61,41 @@ output findPrimes(long int N, int threadCount, omp_sched_t schedule, int chunk){
 	int i;
 	//SERIAL SECTION
 	r.time = omp_get_wtime();
-	r.primes.push_back(2);
+	r.primes[12].push_back(2);
 	for(i=3; i<=_sqrt; i+=2){
-		for(int j : r.primes){
+		for(int j : r.primes[12]){
 			if(i%j==0) break;
-			if(i/j<j){ r.primes.push_back(i); break; }
+			if(i/j<j){ r.primes[12].push_back(i); break; }
 		}
 	}
-	_sqrt = r.primes.size(); //This variable now stores the number of primes less than sqrt(N).
-	
+	_sqrt = r.primes[12].size(); //This variable now stores the number of primes less than sqrt(N).
+		//Actually we could now omit this and use a simple for(:) format but
+		//this allows us to handle edge case (k==_sqrt) better.
+		
 	//PARALLEL SECTION
 	omp_set_schedule(schedule, chunk);
-//	std::list<long int>::iterator it;
 	int k;
 #pragma omp parallel firstprivate(i) shared(r) private (k) num_threads(threadCount)
 {
+	int tid = omp_get_thread_num();
 	#pragma omp for
 	for(long int _i=i;_i<=N; _i+=2){
 		for(k=0; k<=_sqrt; k++){
-			if( ((_i/r.primes[k]) <= r.primes[k]) || (k==_sqrt) )
-				{ r.primes.push_back(_i); break; }
-			if(_i%(r.primes[k])==0) break;
+			if( (k==_sqrt) || ((_i/r.primes[12][k]) < r.primes[12][k]) )
+				{ r.primes[tid].push_back(_i); break; }
+			if(_i%(r.primes[12][k])==0) break;
 		}
 	}
 }
 	r.time = omp_get_wtime()-r.time;
-	std::sort(r.primes.begin(), r.primes.end());
+	int y=0, z=0;
+	for(y; y<threadCount; y++){ z += r.primes[y].size(); }
+	r.primes[12].reserve(z+r.primes[12].size());
+	for(y; y>=0; y--){
+		r.primes[12].insert( r.primes[12].end(), r.primes[y].begin(), r.primes[y].end() ); 
+		r.primes[y].clear();
+	}
+	std::sort(r.primes[12].begin(), r.primes[12].end());
 	return r;
 }
 
