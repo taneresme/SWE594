@@ -91,7 +91,8 @@ output findPrimes(long int N, int threadCount, omp_sched_t schedule, int chunk){
 	int y=0, z=0;
 	for(y; y<threadCount; y++){ z += r.primes[y].size(); }
 	r.primes[12].reserve(z+r.primes[12].size());
-	for(y; y>=0; y--){
+	for(y; y>=0; ){
+		y--;
 		r.primes[12].insert( r.primes[12].end(), r.primes[y].begin(), r.primes[y].end() ); 
 		r.primes[y].clear();
 	}
