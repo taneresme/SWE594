@@ -79,7 +79,7 @@ output findPrimes(long int N, int threadCount, omp_sched_t schedule, int chunk){
 {
 	int tid = omp_get_thread_num();
 	#pragma omp for
-	for(long int _i=i;_i<=N; _i+=2){
+	for(long int _i=i; _i<=N; _i+=2){
 		for(k=0; k<=_sqrt; k++){
 			if( (k==_sqrt) || ((_i/r.primes[12][k]) < r.primes[12][k]) )
 				{ r.primes[tid].push_back(_i); break; }
@@ -91,9 +91,9 @@ output findPrimes(long int N, int threadCount, omp_sched_t schedule, int chunk){
 	
 	//MERGING THREAD DATA
 	int y=0, z=0;
-	for(y; y<threadCount; y++){ z += r.primes[y].size(); }
+	for( ; y<threadCount; y++){ z += r.primes[y].size(); }
 	r.primes[12].reserve(z+r.primes[12].size());
-	for(y; y>0; ){
+	for( ; y>0; ){
 		y--;
 		r.primes[12].insert( r.primes[12].end(), r.primes[y].begin(), r.primes[y].end() ); 
 		r.primes[y].clear();
@@ -106,14 +106,16 @@ output findPrimes(long int N, int threadCount, omp_sched_t schedule, int chunk){
 std::string formatOutput(scheduleDetail schedule, int chunk){
 	std::ostringstream st;
 	st <<N<<',' <<schedule.name<<',' <<chunk<<',';
-	double t[5], s[3];
+	double t[5]/*, s[3]*/;
+		//Turns out the array to hold speedup values is completely unnecessary
+		//since we won't be those after their calculation.
 	int k;
 	for(k=0; k<5; k++){
 		output p = findPrimes(N, ind[k], schedule.type, chunk);
 		t[k] = p.time; st<<t[k]<<',';
 		//for(auto i:p.primes) std::cout << i << '\t'; std::cout<<std::endl; //UNCOMMENT TO PRINT PRIMES
 		}
-	for(k=0; k<3; k++){ s[k]=t[0]/t[k+1]; st<<s[k]; if(k<2) st<<','; }
+	for(k=0; k<3; k++){ st<<(t[0]/t[k+1]); if(k<2) st<<','; }
 	st<<'\n';
 	return st.str();
 }
@@ -121,7 +123,7 @@ std::string formatOutput(scheduleDetail schedule, int chunk){
 int main(int argc, char *argv[])
 {
 	//Letting compiler know that we'll be working in parallel
-	omp_set_schedule(omp_sched_dynamic, 0);
+	omp_set_schedule(omp_sched_auto, 0);
 	
 	//INPUT ACCEPTANCE
 	if(argc>2) { std::cout << "Please enter at most 1 additional (integer) argument."; return 1; }
@@ -131,7 +133,7 @@ int main(int argc, char *argv[])
 		std::string s; std::cin  >> s; N = std::stoi(s);
 	}
 		
-/*	//CALCULATING SEQUANTIAL TIME //omitted since we're taking t0 instead of t*
+/*	//CALCULATING SEQUANTIAL TIME //Omitted since we're taking t0 instead of t*
 	std::list<int> P(1,2);
 	ts = omp_get_wtime();
 	for(int i=3; i<=N; i +=2){
